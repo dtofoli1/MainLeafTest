@@ -8,6 +8,7 @@ public class Player : MonoBehaviour
     public Transform cam;
     public Transform groundChecker;
     public LayerMask ground;
+    public CameraController cameraController;
 
     public float speed = 6;
     public float turnSmoothTime = 0.1f;
@@ -22,8 +23,6 @@ public class Player : MonoBehaviour
     public delegate void PlayerInteraction(Player player);
     public PlayerInteraction interaction;
 
-    public bool cameraLock = false;
-
     private void Update()
     {
         HandleMovement();
@@ -33,9 +32,9 @@ public class Player : MonoBehaviour
 
     private void HandleMovement()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+        float horizontal = Movement.GetAxisDirection("Horizontal");
+        float vertical = Movement.GetAxisDirection("Vertical");
+        Vector3 direction = Movement.GetDirection(horizontal, vertical);
 
         if (direction.magnitude >= 0.1f)
         {
@@ -54,6 +53,10 @@ public class Player : MonoBehaviour
         {
             interaction?.Invoke(this);
         }
+        else
+        {
+            cameraController.CameraLookAt(this.transform);
+        }
     }
 
     private void HandleGravity()
@@ -69,10 +72,8 @@ public class Player : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        if (hit.collider.GetComponent<InteractiveObject>())
+        if (hit.collider.GetComponent<InteractiveObject>() && interaction == null)
         {
-            Debug.Log("HIT");
-            interaction = null;
             InteractiveObject interactiveObject = hit.collider.GetComponent<InteractiveObject>();
             interaction = interactiveObject.Interaction;
         }
