@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class InteractableBox : InteractiveObject
 {
-    public float speed = 0.5f;
     public bool locked = false;
+    public Transform cameraTarget;
     public Rigidbody rb;
     public override void Interaction(Player player)
     {
@@ -13,21 +13,28 @@ public class InteractableBox : InteractiveObject
         {
             return;
         }
-        player.cameraController.CameraLookAt(this.transform, true);
-        MoveBox();
+        player.cameraController.CameraLookAt(cameraTarget);
+        player.cameraController.Recenter(true);
+        MoveBox(player);
     }
 
-    public void MoveBox()
+    public void MoveBox(Player player)
     {
-        float horizontal = Movement.GetAxisDirection("Horizontal");
-        float vertical = Movement.GetAxisDirection("Vertical");
-        Vector3 direction = Movement.GetDirection(horizontal, vertical);
+        Vector3 pushDirection = Movement.GetDirection() + (Movement.GetDirection() * 0.2f);
 
-        if (direction.magnitude >= 0.1f)
+        if (Mathf.Sign(pushDirection.z) == 0)
         {
-            Debug.Log(direction);
-            rb.AddForce(direction, ForceMode.Force);
-            //this.transform.position += direction;
+            return;
         }
+        else if (Mathf.Sign(pushDirection.z) < 0)
+        {
+            player.playerState = PlayerState.PULLING;
+        }
+        else
+        {
+            player.playerState = PlayerState.PUSHING;
+        }
+
+        rb.velocity = pushDirection;
     }
 }

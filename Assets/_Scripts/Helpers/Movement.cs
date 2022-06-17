@@ -4,13 +4,10 @@ using UnityEngine;
 
 public static class Movement
 {
-    public static float GetAxisDirection(string axis)
+    public static Vector3 GetDirection()
     {
-        return Input.GetAxisRaw(axis);
-    }
-
-    public static Vector3 GetDirection(float horizontal, float vertical)
-    {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
         return new Vector3(horizontal, 0f, vertical).normalized;
     }
 }

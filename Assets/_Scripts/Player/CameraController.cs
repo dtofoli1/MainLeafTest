@@ -7,13 +7,15 @@ public class CameraController : MonoBehaviour
 {
     public CinemachineFreeLook playerCam;
 
-    public void CameraLookAt(Transform target, bool lockCamera = false)
+    public void CameraLookAt(Transform target)
     {
         playerCam.LookAt = target;
         playerCam.Follow = target;
-        if (lockCamera)
-        {
-            playerCam.ForceCameraPosition(target.position, Quaternion.identity);
-        }
+    }
+
+    public void Recenter(bool lockCamera)
+    {
+        playerCam.m_RecenterToTargetHeading.m_enabled = lockCamera;
+        playerCam.m_YAxisRecentering.m_enabled = lockCamera;
     }
 }
