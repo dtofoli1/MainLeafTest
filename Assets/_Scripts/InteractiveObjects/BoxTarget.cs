@@ -13,7 +13,6 @@ public class BoxTarget : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("TRIGGER ENTER");
         if (other.gameObject.GetComponent<InteractableBox>())
         {
             InteractableBox interactableBox = other.gameObject.GetComponent<InteractableBox>();
@@ -38,5 +37,6 @@ public class BoxTarget : MonoBehaviour
         interactableBox.rb.constraints = RigidbodyConstraints.FreezePosition;
         yield return update;
         GameManager.instance.ActivateNextTarget();
+        GameManager.instance.SaveBoxPosition(this.position);
     }
 }

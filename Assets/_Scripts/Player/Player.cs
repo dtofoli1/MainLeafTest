@@ -20,46 +20,36 @@ public class Player : MonoBehaviour
     
     float turnSmoothVelocity;
     Vector3 velocity;
-    bool isGrounded = true;
-    Ledge activeLedge;
+    [SerializeField] bool isGrounded = true;
 
     public delegate void PlayerInteraction(Player player);
     public PlayerInteraction interaction;
 
     private void Update()
     {
-        HandlePlayerMovement();
-        HandleGravity();
-        HandleInteraction();
+        if (playerState != PlayerState.CUTSCENE)
+        {
+            HandleInput();
+            HandleInteraction();
+            HandleGravity();
+        }
     }
 
-    private void HandlePlayerMovement()
+    private void HandleInput()
     {
-        switch (playerState)
+        if (Input.GetKeyDown("space") && isGrounded)
         {
-            case PlayerState.IDLE:
-                animationStateController.StateControl();
-                HandleMovement();
-                break;
-            case PlayerState.MOVING:
-                animationStateController.StateControl("isMoving");
-                HandleMovement();
-                break;
-            case PlayerState.PUSHING:
-                animationStateController.StateControl("isPushing");
-                HandlePush();
-                break;
-            case PlayerState.PULLING:
-                animationStateController.StateControl("isPulling");
-                HandlePush();
-                break;
-            case PlayerState.CLIMBING:
-                break;
-            case PlayerState.JUMPING:
-                break;
-            case PlayerState.CROUCHING:
-                animationStateController.StateControl("isCrouching");
-                break;
+            animationStateController.StateControl("isJumping", true);
+            HandleJump();
+        }
+        if (Input.GetAxisRaw("Vertical") != 0 || Input.GetAxisRaw("Horizontal") != 0)
+        {
+            animationStateController.StateControl("isMoving", true);
+            HandleMovement();
+        }
+        else
+        {
+            animationStateController.StateControl("isMoving", false);
         }
     }
 
@@ -67,10 +57,19 @@ public class Player : MonoBehaviour
     {
         Vector3 direction = Movement.GetDirection();
 
+        if (playerState == PlayerState.PUSHING || playerState == PlayerState.PULLING)
+        {
+            HandlePush();
+            return;
+        }
+        else
+        {
+            animationStateController.StateControl("isPushing", false);
+            animationStateController.StateControl("isPulling", false);
+        }
+
         if (direction.magnitude >= 0.01f)
         {
-            playerState = PlayerState.MOVING;
-
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
@@ -78,24 +77,16 @@ public class Player : MonoBehaviour
             Vector3 moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
             controller.Move(moveDirection.normalized * speed * Time.deltaTime);
         }
-        else
-        {
-            playerState = PlayerState.IDLE;
-        }
     }
 
     private void HandlePush()
     {
         Vector3 direction = Movement.GetDirection();
-
+        
         if (direction.magnitude >= 0.1f)
         {
             transform.LookAt(cameraController.playerCam.LookAt);
             controller.Move(direction * Time.deltaTime);
-        }
-        else
-        {
-            playerState = PlayerState.IDLE;
         }
     }
 
@@ -109,6 +100,7 @@ public class Player : MonoBehaviour
         {
             interaction = null;
             cameraController.CameraLookAt(this.transform);
+            playerState = PlayerState.IDLE;
             cameraController.Recenter(false);
         }
     }
@@ -119,30 +111,15 @@ public class Player : MonoBehaviour
         if (isGrounded && velocity.y < 0)
         {
             velocity.y = 0;
+            animationStateController.StateControl("isJumping", false);
         }
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+         if (controller.enabled == true) controller.Move(velocity * Time.deltaTime);
     }
 
-    public void HandleClimb(Vector3 handPosition, Ledge currentLedge)
+    private void HandleJump()
     {
-        activeLedge = currentLedge;
-        StartCoroutine(ClimbRoutine(handPosition));
-    }
-
-    private IEnumerator ClimbRoutine(Vector3 handPosition)
-    {
-        controller.enabled = false;
-        transform.position = handPosition;
-        yield return new WaitForSeconds(0.2f);
-        animationStateController.StateControl("IsClimbing");
-        yield return new WaitForSeconds(0.2f);
-    }
-
-    public void ClimbLedge()
-    {
-        transform.position = activeLedge.GetStandPosition();
-        controller.enabled = true;
+        velocity.y += Mathf.Sqrt(jumpHeight * -2f * gravity);
     }
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
