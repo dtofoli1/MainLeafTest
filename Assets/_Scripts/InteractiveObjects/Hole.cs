@@ -7,10 +7,8 @@ public class Hole : InteractiveObject
     public Transform cameraTarget;
     public override void Interaction(Player player)
     {
-        Debug.Log("ENTER HOLE");
         player.cameraController.CameraLookAt(cameraTarget);
         player.cameraController.Recenter(true);
-        player.playerState = PlayerState.CUTSCENE;
         player.animationStateController.StateControl("isCrouching", true);
         StartCoroutine(EnterHoleRoutine(player));
     }
@@ -25,7 +23,7 @@ public class Hole : InteractiveObject
         float percent = 0;
         WaitForFixedUpdate update = new WaitForFixedUpdate();
 
-        while (percent < 3f)
+        while (percent < 1.5f)
         {
             float step = player.speed * percent * Time.deltaTime;
             percent += Time.deltaTime;
@@ -34,5 +32,6 @@ public class Hole : InteractiveObject
         }
 
         player.transform.position = cameraTarget.position;
+        GameManager.instance.LoadScene(1);
     }
 }

@@ -7,6 +7,7 @@ public class InteractableBox : InteractiveObject
     public bool locked = false;
     public Transform cameraTarget;
     public Rigidbody rb;
+    public PuzzleManager puzzleManager;
     public override void Interaction(Player player)
     {
         if (locked)
@@ -40,5 +41,5 @@ public class InteractableBox : InteractiveObject
         }
 
         rb.velocity = pushDirection;
-    }
+    }    
 }

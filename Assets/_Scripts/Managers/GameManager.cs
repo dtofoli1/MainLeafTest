@@ -1,36 +1,71 @@
-using System.Collections;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    public List<GameObject> boxTargets = new List<GameObject>();
-    public List<GameObject> boxes = new List<GameObject>();
-    public List<Vector3> boxPositions = new List<Vector3>();
+    public bool isPaused = false;
 
     private void Awake()
     {
-        instance = this;
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (instance != null)
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void Start()
     {
-        for (int i = 0; i < boxPositions.Count; i++)
+        if (SceneManager.GetActiveScene().buildIndex == 0)
         {
-            boxes[i].transform.position = boxPositions[i];
+            UIManager.instance.UpdateTitle("Box Stage");
+            UIManager.instance.PauseGameMenu(true);
+        }
+        else
+        {
+            Debug.Log("SCENE 1");
+            UIManager.instance.UpdateTitle("Maze Stage");
+            UIManager.instance.PauseGameMenu(true);
         }
     }
 
-    public void ActivateNextTarget()
+    public void LoadScene(int id)
     {
-        boxTargets[0].SetActive(false);
-        boxTargets[1].SetActive(true);
+        SceneManager.LoadScene(id);
     }
 
-    public void SaveBoxPosition(Vector3 boxPosition)
+    public void PauseGame()
     {
-        boxPositions.Add(boxPosition);
+        Time.timeScale = 0;
+    }
+
+    public void ResumeGame()
+    {
+        Time.timeScale = 1;
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    public void EndGame()
+    {
+        SceneManager.LoadScene(2);
+        UIManager.instance.EndGameMenu();
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(0);
+        UIManager.instance.PauseGameMenu(false);
+        PauseGame();
+        isPaused = true;
     }
 }

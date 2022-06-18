@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     public float gravity = -9.81f;
     public float jumpHeight = 2f;
     public float groundDistance = 0.2f;
+    public int coins;
     
     float turnSmoothVelocity;
     Vector3 velocity;
@@ -50,6 +51,11 @@ public class Player : MonoBehaviour
         else
         {
             animationStateController.StateControl("isMoving", false);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape) && !GameManager.instance.isPaused)
+        {
+            UIManager.instance.TogglePauseMenu();
         }
     }
 
@@ -129,5 +135,10 @@ public class Player : MonoBehaviour
             InteractiveObject interactiveObject = hit.collider.GetComponent<InteractiveObject>();
             interaction = interactiveObject.Interaction;
         }
+    }
+
+    public void UpdateCoins()
+    {
+        UIManager.instance.UpdateCoins(coins);
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class BoxTarget : MonoBehaviour
 {
     public Vector3 position;
+    public BoxCollider boxCollider;
 
     private void Awake()
     {
@@ -36,7 +37,6 @@ public class BoxTarget : MonoBehaviour
 
         interactableBox.rb.constraints = RigidbodyConstraints.FreezePosition;
         yield return update;
-        GameManager.instance.ActivateNextTarget();
-        GameManager.instance.SaveBoxPosition(this.position);
+        interactableBox.puzzleManager.ActivateNextTarget();
     }
 }
